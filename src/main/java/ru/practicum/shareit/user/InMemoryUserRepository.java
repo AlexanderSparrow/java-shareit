@@ -24,6 +24,12 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public User findById(long userId) {
+        User user = users.get(userId);
+        if (user == null) {
+            log.warn("Пользователь с id: {} не найден.", userId);
+            throw new NotFoundException("Пользователь с id: " + userId + " не найден!");
+        }
+        log.info("Запрос на вывод пользователя с id: {} выполнен.", userId);
         return users.get(userId);
     }
 
@@ -80,6 +86,7 @@ public class InMemoryUserRepository implements UserRepository {
                     if (value == null || ((String) value).isEmpty()) {
                         throw new ValidationException("Имя пользователя должно быть указано!");
                     }
+                    log.info("Проверили новое имя пользователя - {}, и изменили его.", value);
                     user.setName((String) value);
                     break;
 
@@ -91,7 +98,7 @@ public class InMemoryUserRepository implements UserRepository {
                     if (users.values().stream().anyMatch(u -> u.getId() != id && u.getEmail().equals(email))) {
                         throw new DuplicateKeyException("Пользователь с таким email уже существует!");
                     }
-                    user.setEmail(email);
+                    log.info("Проверили новый e-mail пользователя - {}, и изменили его.", value);                    user.setEmail(email);
                     break;
 
                 default:
