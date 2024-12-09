@@ -98,7 +98,8 @@ public class InMemoryUserRepository implements UserRepository {
                     if (users.values().stream().anyMatch(u -> u.getId() != id && u.getEmail().equals(email))) {
                         throw new DuplicateKeyException("Пользователь с таким email уже существует!");
                     }
-                    log.info("Проверили новый e-mail пользователя - {}, и изменили его.", value);                    user.setEmail(email);
+                    log.info("Проверили новый e-mail пользователя - {}, и изменили его.", value);
+                    user.setEmail(email);
                     break;
 
                 default:
