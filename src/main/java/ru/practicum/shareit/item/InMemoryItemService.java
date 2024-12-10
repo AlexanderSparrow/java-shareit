@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -10,8 +11,8 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class ItemServiceImpl implements ItemService{
-    ItemRepository itemRepository;
+public class InMemoryItemService implements ItemService {
+    private final ItemRepository itemRepository;
 
     @Override
     public List<Item> getUserItems(long userId) {
@@ -20,6 +21,8 @@ public class ItemServiceImpl implements ItemService{
 
     @Override
     public Item getItemById(long itemId) {
+        if (itemRepository.getItemById(itemId) == null)
+            throw new NotFoundException("Вещь с id:"+ itemId + " не найдена!");
         return itemRepository.getItemById(itemId);
     }
 

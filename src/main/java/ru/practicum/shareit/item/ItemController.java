@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,11 +14,12 @@ import java.util.Map;
  * TODO Sprint add-controllers.
  */
 @Slf4j
+@Tag(name = "Items", description = "Управление вещами")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/items")
 public class ItemController {
-    ItemService itemService;
+    private final ItemService itemService;
 
     @GetMapping
     public List<Item> getUserItems(@RequestHeader("X-Sharer-User-Id") long userId) {
@@ -35,7 +37,7 @@ public class ItemController {
     public Item addNewItem(@Valid
                            @RequestHeader("X-Sharer-User-Id") long userId,
                            @RequestBody Item item) {
-        log.info("Получен запрос на добавление новой вещи пользователем с id: {}.", userId);
+        log.info("Получен запрос на добавление новой вещи {} пользователем с id: {}.", item, userId);
         return itemService.addNewItem(userId, item);
     }
 

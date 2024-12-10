@@ -112,4 +112,9 @@ public class InMemoryUserRepository implements UserRepository {
         return user;
     }
 
+    @Override
+    public boolean existsById(long userId) {
+        return users.containsKey(userId);
+    }
+
 }

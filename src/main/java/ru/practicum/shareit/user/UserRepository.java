@@ -14,4 +14,6 @@ public interface UserRepository {
     User update(User user);
 
     User partialUpdate(Long id, Map<String, Object> updates);
+
+    boolean existsById(long userId);
 }
