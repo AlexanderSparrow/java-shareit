@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserService;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InMemoryItemService implements ItemService {
     private final ItemRepository itemRepository;
+    private final UserService userService;
 
     @Override
     public List<Item> getUserItems(long userId) {
@@ -22,7 +24,7 @@ public class InMemoryItemService implements ItemService {
     @Override
     public Item getItemById(long itemId) {
         if (itemRepository.getItemById(itemId) == null)
-            throw new NotFoundException("Вещь с id:"+ itemId + " не найдена!");
+            throw new NotFoundException("Вещь с id:" + itemId + " не найдена!");
         return itemRepository.getItemById(itemId);
     }
 
@@ -39,7 +41,7 @@ public class InMemoryItemService implements ItemService {
 
     @Override
     public Item partialUpdate(long userId, long itemId, Map<String, Object> updates) {
-        return itemRepository.partialUpdate(userId, updates);
+        return itemRepository.partialUpdate(userId, itemId, updates);
     }
 
     @Override

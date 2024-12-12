@@ -14,7 +14,7 @@ public interface ItemRepository {
 
     void delete(long userId, long itemId);
 
-    Item partialUpdate(long userId, Map<String, Object> updates);
+    Item partialUpdate(long userId, long itemId, Map<String, Object> updates);
 
     List<Item> searchItems(String text);
 }

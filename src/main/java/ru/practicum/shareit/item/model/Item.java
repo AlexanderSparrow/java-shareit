@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.model;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import ru.practicum.shareit.request.ItemRequest;
 
 @Data
 public class Item {
@@ -11,7 +12,9 @@ public class Item {
     private String name;
     @NotBlank(message = "Предмет должен иметь описание.")
     private String description;
-    private boolean available;
-    private String request;
+    private Boolean available;
+    private ItemRequest request;
+
 }
+
 

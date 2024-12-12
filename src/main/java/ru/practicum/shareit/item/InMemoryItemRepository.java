@@ -48,6 +48,10 @@ public class InMemoryItemRepository implements ItemRepository {
         if (item.getDescription() == null || item.getDescription().isBlank()) {
             throw new IllegalArgumentException("Описание вещи не может быть пустым!");
         }
+
+        if (item.getAvailable() == null) {
+            throw new IllegalArgumentException("Статус доступности вещи обязателен для указания!");
+        }
         long newId = items.stream()
                 .mapToLong(Item::getId)
                 .max()
@@ -66,33 +70,16 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public Item partialUpdate(long userId, Map<String, Object> updates) {
-        if (updates == null || !updates.containsKey("id") || updates.get("id") == null) {
-            throw new IllegalArgumentException("Поле 'id' не может быть пустым!");
-        }
-        if (!updates.containsKey("available")) {
-            throw new IllegalArgumentException("Поле 'available' обязательно для обновления!");
-        }
-
-        long itemId;
-        try {
-            itemId = ((Number) updates.get("id")).longValue();
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException("Поле 'id' должно быть числом.");
-        }
-
-        // Поиск вещи
+    public Item partialUpdate(long userId, long itemId, Map<String, Object> updates) {
         Item item = items.stream()
                 .filter(i -> i.getId() == itemId)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Вещь для обновления не найдена."));
 
-        // Проверка владельца
         if (item.getOwnerId() != userId) {
-            throw new IllegalArgumentException("Только владелец может обновлять вещь.");
+            throw new NotFoundException("Только владелец может обновлять вещь.");
         }
 
-        // Обновление полей
         updates.forEach((key, value) -> {
             switch (key) {
                 case "name" -> {
@@ -127,7 +114,7 @@ public class InMemoryItemRepository implements ItemRepository {
                 .filter(item -> {
                     String name = item.getName() != null ? item.getName().toLowerCase() : "";
                     String description = item.getDescription() != null ? item.getDescription().toLowerCase() : "";
-                    return (name.contains(textLowerCase) || description.contains(textLowerCase)) && item.isAvailable();
+                    return (name.contains(textLowerCase) || description.contains(textLowerCase)) && item.getAvailable();
                 })
                 .toList();
         log.info("Результат поиска: {}.", searchResult);
