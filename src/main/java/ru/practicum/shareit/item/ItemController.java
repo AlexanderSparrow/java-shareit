@@ -10,9 +10,6 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 import java.util.Map;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Slf4j
 @Tag(name = "Items", description = "Управление вещами")
 @RestController
