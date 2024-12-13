@@ -101,10 +101,11 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>10.12.1</version>
+						<version>10.12.1</version> <!-- Добавлено -->
 					</dependency>
 				</dependencies>
 			</plugin>
+
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
