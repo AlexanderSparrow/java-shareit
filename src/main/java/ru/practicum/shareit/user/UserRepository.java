@@ -1,9 +1,10 @@
 package ru.practicum.shareit.user;
 
+import java.util.List;
 import java.util.Map;
 
 public interface UserRepository {
-    Map<Long, User> findAll();
+    List<User> findAll();
 
     User findById(long userId);
 

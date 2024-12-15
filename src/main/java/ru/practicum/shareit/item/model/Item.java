@@ -1,9 +1,11 @@
 package ru.practicum.shareit.item.model;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class Item {
     private long id;
     private long ownerId;

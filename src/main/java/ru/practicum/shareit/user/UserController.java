@@ -1,30 +1,31 @@
 package ru.practicum.shareit.user;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.user.dto.UserDto;
 
+import java.util.List;
 import java.util.Map;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Users", description = "Управление пользователями")
 @RequestMapping(path = "/users")
 public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public Map<Long, User> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         log.info("Получен запрс на вывод всех пользователей");
         return userService.getAll();
     }
 
     @GetMapping("/{userId}")
-    public User getUser(@PathVariable long userId) {
+    public UserDto getUser(@PathVariable long userId) {
         log.info("Получен запрос на вывод пользователя с id: {}", userId);
         return userService.getUserById(userId);
     }
@@ -36,19 +37,19 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@Valid @RequestBody User user) {
-        log.info("Получен запрос на добавление пользователя: {}", user);
-        return userService.createUser(user);
+    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
+        log.info("Получен запрос на добавление пользователя: {}", userDto);
+        return userService.createUser(userDto);
     }
 
     @PutMapping
-    public User updateUser(@Valid @RequestBody User user) {
-        log.info("Получен запрос на полное обновление пользователя: {}", user);
-        return userService.updateUser(user);
+    public UserDto updateUser(@Valid @RequestBody UserDto userDto) {
+        log.info("Получен запрос на полное обновление пользователя: {}", userDto);
+        return userService.updateUser(userDto);
     }
 
     @PatchMapping("/{id}")
-    public User partiallyUpdateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+    public UserDto partiallyUpdateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
         log.info("Получен запрос на частичное обновление пользователя с id: {}", id);
         return userService.partialUpdate(id, updates); // Частичное обновление
     }

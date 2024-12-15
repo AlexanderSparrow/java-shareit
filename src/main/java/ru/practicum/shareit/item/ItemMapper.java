@@ -18,12 +18,12 @@ public class ItemMapper {
     }
 
     public static Item toItem(ItemDto itemDto, ItemRequest itemRequest) {
-        Item item = new Item();
-        item.setId(itemDto.getId());
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
-        item.setRequestId(itemRequest.getId());
-        return item;
+        return Item.builder()
+                .id(itemDto.getId())
+                .name(itemDto.getName())
+                .description(itemDto.getDescription())
+                .available(itemDto.getAvailable())
+                .requestId(itemRequest != null ? itemRequest.getId() : null) // Проверяем itemRequest
+                .build();
     }
 }

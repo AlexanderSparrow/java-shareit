@@ -2,22 +2,28 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.user.dto.UserDto;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class InMemoryUserService implements UserService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Override
-    public Map<Long, User> getAll() {
-        return userRepository.findAll();
+    public List<UserDto> getAll() {
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toUserDto)
+                .toList();
     }
 
     @Override
-    public User getUserById(long userId) {
-        return userRepository.findById(userId);
+    public UserDto getUserById(long userId) {
+        return userMapper.toUserDto(userRepository.findById(userId));
     }
 
     @Override
@@ -26,17 +32,21 @@ public class InMemoryUserService implements UserService {
     }
 
     @Override
-    public User createUser(User user) {
-        return userRepository.create(user);
+    public UserDto createUser(UserDto userDto) {
+        User user = userMapper.toUser(userDto);
+        User createdUser = userRepository.create(user);
+        return userMapper.toUserDto(createdUser);
     }
 
     @Override
-    public User updateUser(User user) {
-        return userRepository.update(user);
+    public UserDto updateUser(UserDto userDto) {
+        User user = userMapper.toUser(userDto);
+        User updatedUser = userRepository.create(user);
+        return userMapper.toUserDto(updatedUser);
     }
 
     @Override
-    public User partialUpdate(Long id, Map<String, Object> updates) {
-        return userRepository.partialUpdate(id, updates);
+    public UserDto partialUpdate(Long id, Map<String, Object> updates) {
+        return userMapper.toUserDto(userRepository.partialUpdate(id, updates));
     }
 }

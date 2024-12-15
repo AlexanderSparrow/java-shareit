@@ -2,12 +2,11 @@ package ru.practicum.shareit.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
+@AllArgsConstructor
 public class User {
     private long id;
 
@@ -17,5 +16,4 @@ public class User {
 
     @NotBlank(message = "Необходимо указать имя пользователя!")
     private String name;
-
 }

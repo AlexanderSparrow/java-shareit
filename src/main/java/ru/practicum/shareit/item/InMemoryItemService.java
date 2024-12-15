@@ -4,6 +4,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 
@@ -15,22 +16,28 @@ import java.util.Map;
 public class InMemoryItemService implements ItemService {
     private final ItemRepository itemRepository;
     private final UserService userService;
+    private final ItemMapper itemMapper;
 
     @Override
-    public List<Item> getUserItems(long userId) {
-        return itemRepository.getUserItems(userId);
+    public List<ItemDto> getUserItems(long userId) {
+        return itemRepository.getUserItems(userId).stream()
+                .map(ItemMapper::toItemDto)
+                .toList();
     }
 
     @Override
-    public Item getItemById(long itemId) {
-        if (itemRepository.getItemById(itemId) == null)
+    public ItemDto getItemById(long itemId) {
+        Item item = itemRepository.getItemById(itemId);
+        if (item == null)
             throw new NotFoundException("Вещь с id:" + itemId + " не найдена!");
-        return itemRepository.getItemById(itemId);
+        return ItemMapper.toItemDto(item);
     }
 
     @Override
-    public Item addNewItem(long userId, Item item) {
-        return itemRepository.addNewItem(userId, item);
+    public ItemDto addNewItem(long userId, ItemDto itemDto) {
+        Item item = ItemMapper.toItem(itemDto, null); // Пока передаем `null` для `ItemRequest`
+        Item savedItem = itemRepository.addNewItem(userId, item);
+        return ItemMapper.toItemDto(savedItem);
     }
 
     @Override
@@ -40,12 +47,16 @@ public class InMemoryItemService implements ItemService {
     }
 
     @Override
-    public Item partialUpdate(long userId, long itemId, Map<String, Object> updates) {
-        return itemRepository.partialUpdate(userId, itemId, updates);
+    public ItemDto partialUpdate(long userId, long itemId, Map<String, Object> updates) {
+        Item updatedItem = itemRepository.partialUpdate(userId, itemId, updates);
+        return ItemMapper.toItemDto(updatedItem);
     }
 
     @Override
-    public List<Item> searchItems(String text) {
-        return itemRepository.searchItems(text);
+    public List<ItemDto> searchItems(String text) {
+
+        return itemRepository.searchItems(text).stream()
+                .map(ItemMapper::toItemDto)
+                .toList();
     }
 }
