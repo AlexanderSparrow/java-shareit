@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserService;
 
 import java.util.List;
 import java.util.Map;
@@ -15,8 +14,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InMemoryItemService implements ItemService {
     private final ItemRepository itemRepository;
-    private final UserService userService;
-    private final ItemMapper itemMapper;
 
     @Override
     public List<ItemDto> getUserItems(long userId) {
@@ -35,7 +32,7 @@ public class InMemoryItemService implements ItemService {
 
     @Override
     public ItemDto addNewItem(long userId, ItemDto itemDto) {
-        Item item = ItemMapper.toItem(itemDto, null); // Пока передаем `null` для `ItemRequest`
+        Item item = ItemMapper.toItem(itemDto);
         Item savedItem = itemRepository.addNewItem(userId, item);
         return ItemMapper.toItemDto(savedItem);
     }
