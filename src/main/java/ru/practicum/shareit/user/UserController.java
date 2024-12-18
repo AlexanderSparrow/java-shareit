@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -42,17 +41,11 @@ public class UserController {
         return userService.createUser(userDto);
     }
 
-    @PutMapping
-    public UserDto updateUser(@Valid @RequestBody UserDto userDto) {
-        log.info("Получен запрос на полное обновление пользователя: {}", userDto);
+    @PatchMapping("/{userId}")
+    public UserDto updateUser(@PathVariable Long userId, @RequestBody UserDto userDto) {
+        log.info("Получен запрос на частичное обновление пользователя {}", userDto);
+        userDto.setId(userId);
         return userService.updateUser(userDto);
     }
-
-    @PatchMapping("/{id}")
-    public UserDto partiallyUpdateUser(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
-        log.info("Получен запрос на частичное обновление пользователя с id: {}", id);
-        return userService.partialUpdate(id, updates); // Частичное обновление
-    }
-
 }
 

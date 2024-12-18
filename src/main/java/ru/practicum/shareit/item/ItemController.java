@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Tag(name = "Items", description = "Управление вещами")
@@ -49,9 +48,9 @@ public class ItemController {
     public ItemDto updateItem(@Valid
                               @RequestHeader("X-Sharer-User-Id") long userId,
                               @PathVariable(name = "itemId") long itemId,
-                              @RequestBody Map<String, Object> updates) {
+                              @RequestBody ItemDto itemDto) {
         log.info("Получен запрос на обновление информации о вещи с id: {}.", itemId);
-        return itemService.partialUpdate(userId, itemId, updates);
+        return itemService.updateItem(userId, itemId, itemDto);
     }
 
     @GetMapping("/search")
