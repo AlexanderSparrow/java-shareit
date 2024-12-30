@@ -5,10 +5,7 @@ import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -33,8 +30,8 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public Item getItemById(long itemId) {
-        return items.get(itemId);
+    public Optional<Item> getItemById(long itemId) {
+        return Optional.ofNullable(items.get(itemId));
     }
 
     @Override

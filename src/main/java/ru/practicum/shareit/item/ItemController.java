@@ -30,9 +30,8 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemDto addNewItem(@Valid
-                              @RequestHeader("X-Sharer-User-Id") long userId,
-                              @RequestBody ItemDto itemDto) {
+    public ItemDto addNewItem(@RequestHeader("X-Sharer-User-Id") long userId,
+                              @Valid @RequestBody ItemDto itemDto) {
         log.info("Получен запрос на добавление новой вещи {} пользователем с id: {}.", itemDto, userId);
         return itemService.addNewItem(userId, itemDto);
     }
@@ -45,8 +44,7 @@ public class ItemController {
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@Valid
-                              @RequestHeader("X-Sharer-User-Id") long userId,
+    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") long userId,
                               @PathVariable(name = "itemId") long itemId,
                               @RequestBody ItemDto itemDto) {
         log.info("Получен запрос на обновление информации о вещи с id: {}.", itemId);
