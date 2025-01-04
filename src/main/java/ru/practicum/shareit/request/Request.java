@@ -3,7 +3,7 @@ package ru.practicum.shareit.request;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.model.User;
 
 @Getter
 @Setter
