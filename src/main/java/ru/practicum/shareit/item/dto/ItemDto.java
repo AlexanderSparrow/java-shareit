@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ItemDto {
     private long id;
-    private long ownerId;
 
+    private long ownerId;
 
     @NotBlank(message = "Наименование должно быть указано.")
     private String name;

@@ -1,9 +1,8 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.user;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import ru.practicum.shareit.user.User;
 
 @Getter
 @Setter

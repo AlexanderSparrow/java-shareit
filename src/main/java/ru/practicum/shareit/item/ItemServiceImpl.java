@@ -2,91 +2,81 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-@Validated
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-    private void validateUserExists(long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("Пользователь с id: " + userId + " не найден!");
-        }
-    }
-
-    @Override
     public List<ItemDto> getUserItems(long userId) {
-        validateUserExists(userId);
-        return itemRepository.getUserItems(userId).stream()
+        return itemRepository.findByOwnerId(userId).stream()
                 .map(ItemMapper::toItemDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
-    @Override
     public ItemDto getItemById(long itemId) {
-        Item item = itemRepository.getItemById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с id: " + itemId + " не найдена!"));
-        return ItemMapper.toItemDto(item);
-    }
-
-    @Override
-    public ItemDto addNewItem(long userId, ItemDto itemDto) {
-        validateUserExists(userId);
-        Item item = ItemMapper.toItem(itemDto);
-        Item savedItem = itemRepository.addNewItem(userId, item);
-        return ItemMapper.toItemDto(savedItem);
-    }
-
-    @Override
-    public void delete(long userId, long itemId) {
-        validateUserExists(userId);
-        itemRepository.delete(userId, itemId);
-    }
-
-    @Override
-    public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
-        validateUserExists(userId);
-        Item existingItem = itemRepository.getItemById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с id: " + itemId + " не найдена!"));
-
-        if (existingItem.getOwnerId() != userId) {
-            throw new NotFoundException("Вещь не принадлежит пользователю.");
-        }
-
-        updateItemFields(existingItem, itemDto);
-        Item updatedItem = itemRepository.updateItem(existingItem);
-        return ItemMapper.toItemDto(updatedItem);
-    }
-
-    @Override
-    public List<ItemDto> searchItems(String text) {
-        if (text == null || text.isBlank()) {
-            return Collections.emptyList();
-        }
-        return itemRepository.searchItems(text).stream()
+        return itemRepository.findById(itemId)
                 .map(ItemMapper::toItemDto)
-                .toList();
+                .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
     }
 
-    private void updateItemFields(Item existingItem, ItemDto itemDto) {
-        if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
-            existingItem.setName(itemDto.getName());
+    @Transactional
+    public ItemDto addNewItem(long userId, ItemDto itemDto) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
-        if (itemDto.getDescription() != null && !itemDto.getDescription().isBlank()) {
-            existingItem.setDescription(itemDto.getDescription());
-        }
-        if (itemDto.getAvailable() != null) {
-            existingItem.setAvailable(itemDto.getAvailable());
-        }
+        Item item = ItemMapper.toItem(itemDto);
+        item.setOwnerId(userId);
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
+
+    @Transactional
+    public void delete(long userId, long itemId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
+
+        if (item.getOwnerId() != userId) {
+            throw new IllegalArgumentException("Пользователь не владеет этой вещью");
+        }
+
+        itemRepository.delete(item);
+    }
+
+    @Transactional
+    public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
+
+        if (item.getOwnerId() != userId) {
+            throw new NotFoundException("Пользователь не владеет этой вещью");
+        }
+
+        if (itemDto.getName() != null) item.setName(itemDto.getName());
+        if (itemDto.getDescription() != null) item.setDescription(itemDto.getDescription());
+        if (itemDto.getAvailable() != null) item.setAvailable(itemDto.getAvailable());
+
+        return ItemMapper.toItemDto(itemRepository.save(item));
+    }
+
+    public List<ItemDto> searchItems(String text) {
+        if (text.isBlank()) {
+            return List.of();
+        }
+
+        List<Item> items = itemRepository.searchItems(text);
+        return items.stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
+    }
+
 }
