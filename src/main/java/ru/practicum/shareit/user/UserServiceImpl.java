@@ -2,11 +2,10 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.DuplicateKeyException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,74 +15,45 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getAll() {
         return userRepository.findAll()
-                .values()
                 .stream()
-                .map(UserMapper::toUserDto)
-                .toList();
+                .map(UserMapper::toUserDto) // Преобразование из User в UserDto
+                .collect(Collectors.toList());
     }
 
     @Override
-    public UserDto getUserById(long userId) {
-        return UserMapper.toUserDto(userRepository.findById(userId));
-    }
-
-    @Override
-    public void deleteById(long userId) {
-        userRepository.delete(userId);
+    public UserDto getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .map(UserMapper::toUserDto) // Преобразование из User в UserDto
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
     }
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        validateUser(userDto);
-
-        if (emailExists(userDto.getEmail())) {
-            throw new DuplicateKeyException("Пользователь с таким email уже существует!");
-        }
-
-        User user = UserMapper.toUser(userDto);
-        User createdUser = userRepository.create(user);
-        return UserMapper.toUserDto(createdUser);
+        User user = UserMapper.toUser(userDto); // Преобразование из UserDto в User
+        return UserMapper.toUserDto(userRepository.save(user)); // Сохранение и преобразование обратно
     }
 
     @Override
-    public UserDto updateUser(UserDto userDto) {
-        User existingUser = userRepository.findById(userDto.getId());
+    public UserDto updateUser(Long userId, UserDto userDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
 
+        // Обновление полей сущности
         if (userDto.getEmail() != null) {
-            if (emailExists(userDto.getEmail(), userDto.getId())) {
-                throw new DuplicateKeyException("Пользователь с таким email уже существует!");
-            }
-            existingUser.setEmail(userDto.getEmail());
+            user.setEmail(userDto.getEmail());
         }
-
         if (userDto.getName() != null) {
-            existingUser.setName(userDto.getName());
+            user.setName(userDto.getName());
         }
 
-        User updatedUser = userRepository.update(existingUser);
-        return UserMapper.toUserDto(updatedUser);
+        return UserMapper.toUserDto(userRepository.save(user)); // Сохранение обновленной сущности
     }
 
-    private void validateUser(UserDto userDto) {
-        if (userDto.getName() == null || userDto.getName().isEmpty()) {
-            throw new ValidationException("Имя пользователя должно быть указано!");
+    @Override
+    public void deleteById(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new IllegalArgumentException("Пользователь не найден");
         }
-        if (userDto.getEmail() == null || userDto.getEmail().isEmpty()) {
-            throw new ValidationException("E-mail пользователя должен быть указан!");
-        }
-    }
-
-    private boolean emailExists(String email) {
-        return userRepository.findAll()
-                .values()
-                .stream()
-                .anyMatch(user -> user.getEmail().equals(email));
-    }
-
-    private boolean emailExists(String email, Long id) {
-        return userRepository.findAll()
-                .values()
-                .stream()
-                .anyMatch(user -> user.getId() != id && user.getEmail().equals(email));
+        userRepository.deleteById(userId);
     }
 }

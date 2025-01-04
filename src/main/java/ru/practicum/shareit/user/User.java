@@ -3,39 +3,25 @@ package ru.practicum.shareit.user;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
+import lombok.*;
 
 @Entity
-@Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Email(message = "Некорректный формат электронной почты!")
     @NotBlank(message = "Электронная почта не может быть пустой!")
+    @Column(nullable = false, unique = true)
     private String email;
 
     @NotBlank(message = "Необходимо указать имя пользователя!")
+    @Column(nullable = false)
     private String name;
-
-    @OneToMany(mappedBy = "booker")
-    private Set<Booking> bookings = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "author")
-    private Set<Comment> comments = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "owner")
-    private Set<Item> items = new LinkedHashSet<>();
-
-    @OneToMany(mappedBy = "requestor")
-    private Set<Request> requests = new LinkedHashSet<>();
-
 }

@@ -13,26 +13,20 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "Users", description = "Управление пользователями")
-@RequestMapping(path = "/users")
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
     @GetMapping
     public List<UserDto> getAllUsers() {
-        log.info("Получен запрс на вывод всех пользователей");
+        log.info("Получен запрос на вывод всех пользователей");
         return userService.getAll();
     }
 
     @GetMapping("/{userId}")
-    public UserDto getUser(@PathVariable long userId) {
+    public UserDto getUser(@PathVariable Long userId) {
         log.info("Получен запрос на вывод пользователя с id: {}", userId);
         return userService.getUserById(userId);
-    }
-
-    @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable long userId) {
-        log.info("Получен запрос на удаление пользователя с id: {}", userId);
-        userService.deleteById(userId);
     }
 
     @PostMapping
@@ -43,9 +37,13 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public UserDto updateUser(@PathVariable Long userId, @RequestBody UserDto userDto) {
-        log.info("Получен запрос на частичное обновление пользователя {}", userDto);
-        userDto.setId(userId);
-        return userService.updateUser(userDto);
+        log.info("Получен запрос на частичное обновление пользователя с id: {}", userId);
+        return userService.updateUser(userId, userDto);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable Long userId) {
+        log.info("Получен запрос на удаление пользователя с id: {}", userId);
+        userService.deleteById(userId);
     }
 }
-
