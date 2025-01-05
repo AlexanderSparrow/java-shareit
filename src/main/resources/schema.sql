@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS items (
     name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     is_available BOOLEAN NOT NULL,
-    request_id BIGINT -- REFERENCES requests(id) ON DELETE SET NULL
+    request_id BIGINT
 );
 
 -- Таблица бронирования вещей
@@ -41,7 +41,3 @@ CREATE TABLE IF NOT EXISTS comments (
     author_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Убираем огрнаничение на обязательное наличие запроса у вещи
--- ALTER TABLE items ALTER COLUMN request_id DROP NOT NULL;
-
--- ALTER TABLE items DROP CONSTRAINT items_request_id_fkey;
