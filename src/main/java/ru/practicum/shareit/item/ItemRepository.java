@@ -20,4 +20,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("SELECT COUNT(i) > 0 FROM Item i WHERE i.id = :itemId AND i.ownerId = :userId")
     boolean isOwner(@Param("userId") long userId, @Param("itemId") long itemId);
+
+    @Query("SELECT i.name FROM Item i WHERE i.id = :id")
+    String findNameById(@Param("id") Long id);
 }

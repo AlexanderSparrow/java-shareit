@@ -45,7 +45,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = BookingMapper.toBooking(bookingDto);
         booking.setStatus(BookingStatus.WAITING);
         booking = bookingRepository.save(booking);
-        return BookingResponseMapper.toBookingResponseDto(booking);
+        return BookingResponseMapper.toBookingResponseDto(booking, item.getName());
     }
 
     @Override
@@ -69,7 +69,7 @@ public class BookingServiceImpl implements BookingService {
         booking = bookingRepository.save(booking);
 
         // Вернуть результат
-        return BookingResponseMapper.toBookingResponseDto(booking);
+        return BookingResponseMapper.toBookingResponseDto(booking, itemRepository.findNameById(booking.getItemId()));
     }
 
     @Override
@@ -81,8 +81,10 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Бронирование id: " + bookingId + " недоступно.");
         }
 
-        return BookingResponseMapper.toBookingResponseDto(booking);
+        return BookingResponseMapper.toBookingResponseDto(booking, itemRepository.findNameById(booking.getItemId()));
     }
+
+
 
     @Override
     public BookingDto updateBookingStatus(long bookingId, long ownerId, BookingStatus status) {
@@ -105,7 +107,9 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingResponseDto> getUserBookings(long userId, String state) {
         List<Booking> bookings = fetchBookingsByState(userId, state, false);
         return bookings.stream()
-                .map(BookingResponseMapper::toBookingResponseDto)
+                .map(booking -> BookingResponseMapper.toBookingResponseDto(
+                        booking,
+                        itemRepository.findNameById(booking.getItemId())))
                 .collect(Collectors.toList());
     }
 
@@ -114,7 +118,9 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookings = fetchBookingsByState(ownerId, state, true);
         if (!bookings.isEmpty()) {
             return bookings.stream()
-                    .map(BookingResponseMapper::toBookingResponseDto)
+                    .map(booking -> BookingResponseMapper.toBookingResponseDto(
+                            booking,
+                            itemRepository.findNameById(booking.getItemId())))
                     .collect(Collectors.toList());
         } else {
             throw new NotFoundException("Список бронирования пользователя с id: " + ownerId + " пуст.");
