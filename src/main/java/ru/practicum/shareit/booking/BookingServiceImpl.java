@@ -13,6 +13,8 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,7 +87,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
 
-
     @Override
     public BookingDto updateBookingStatus(long bookingId, long ownerId, BookingStatus status) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -105,15 +106,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponseDto> getUserBookings(long userId, String state) {
-        List<Booking> bookings = fetchBookingsByState(userId, state, false);
-        return bookings.stream()
-                .map(booking -> BookingResponseMapper.toBookingResponseDto(
-                        booking,
-                        itemRepository.findNameById(booking.getItemId())))
-                .collect(Collectors.toList());
+        BookingSearchState searchState = BookingSearchState.from(state);
+        List<Booking> bookings = fetchBookingsByState(userId, searchState, false);
+        return mapToResponseDtos(bookings);
     }
 
-    @Override
+/*    @Override
     public List<BookingResponseDto> getOwnerBookings(long ownerId, String state) {
         List<Booking> bookings = fetchBookingsByState(ownerId, state, true);
         if (!bookings.isEmpty()) {
@@ -125,24 +123,51 @@ public class BookingServiceImpl implements BookingService {
         } else {
             throw new NotFoundException("Список бронирования пользователя с id: " + ownerId + " пуст.");
         }
+    }*/
+
+    @Override
+    public List<BookingResponseDto> getOwnerBookings(long ownerId, String state) {
+        BookingSearchState searchState = BookingSearchState.from(state);
+        List<Booking> bookings = fetchBookingsByState(ownerId, searchState, true);
+        if (!bookings.isEmpty()) {
+            return mapToResponseDtos(bookings);
+        } else {
+            throw new NotFoundException("Список бронирования пользователя с id: " + ownerId + " пуст.");
+
+        }
     }
 
-    private List<Booking> fetchBookingsByState(long userId, String state, boolean isOwner) {
-        Instant now = Instant.now();
-        return switch (state.toUpperCase()) {
-            case "CURRENT" -> isOwner ? bookingRepository.findCurrentByOwnerId(userId, now)
+    private List<Booking> fetchBookingsByState(long userId, BookingSearchState state, boolean isOwner) {
+        LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()); // Преобразование Instant -> LocalDateTime
+
+        return switch (state) {
+            case CURRENT -> isOwner
+                    ? bookingRepository.findCurrentByOwnerId(userId, now)
                     : bookingRepository.findCurrentByBookerId(userId, now);
-            case "PAST" -> isOwner ? bookingRepository.findPastByOwnerId(userId, now)
+            case PAST -> isOwner
+                    ? bookingRepository.findPastByOwnerId(userId, now)
                     : bookingRepository.findPastByBookerId(userId, now);
-            case "FUTURE" -> isOwner ? bookingRepository.findFutureByOwnerId(userId, now)
+            case FUTURE -> isOwner
+                    ? bookingRepository.findFutureByOwnerId(userId, now)
                     : bookingRepository.findFutureByBookerId(userId, now);
-            case "WAITING" -> isOwner ? bookingRepository.findByOwnerIdAndStatus(userId, BookingStatus.WAITING)
+            case WAITING -> isOwner
+                    ? bookingRepository.findByOwnerIdAndStatus(userId, BookingStatus.WAITING)
                     : bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.WAITING);
-            case "REJECTED" -> isOwner ? bookingRepository.findByOwnerIdAndStatus(userId, BookingStatus.REJECTED)
+            case REJECTED -> isOwner
+                    ? bookingRepository.findByOwnerIdAndStatus(userId, BookingStatus.REJECTED)
                     : bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.REJECTED);
-            default -> isOwner ? bookingRepository.findAllByOwnerId(userId)
+            case ALL -> isOwner
+                    ? bookingRepository.findAllByOwnerId(userId)
                     : bookingRepository.findAllByBookerId(userId);
         };
+    }
+
+    private List<BookingResponseDto> mapToResponseDtos(List<Booking> bookings) {
+        return bookings.stream()
+                .map(booking -> BookingResponseMapper.toBookingResponseDto(
+                        booking,
+                        itemRepository.findNameById(booking.getItemId())))
+                .collect(Collectors.toList());
     }
 
 }

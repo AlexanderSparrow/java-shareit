@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.booking.model.Booking;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,23 +34,23 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b WHERE b.bookerId = :userId AND b.start < :now AND b.end > :now " +
             "ORDER BY b.start DESC")
-    List<Booking> findCurrentByBookerId(long userId, Instant now);
+    List<Booking> findCurrentByBookerId(long userId, LocalDateTime now);
 
     @Query("SELECT b FROM Booking b WHERE b.itemId IN (SELECT i.id FROM Item i WHERE i.ownerId = :ownerId) " +
             "AND b.start < :now AND b.end > :now ORDER BY b.start DESC")
-    List<Booking> findCurrentByOwnerId(long ownerId, Instant now);
+    List<Booking> findCurrentByOwnerId(long ownerId, LocalDateTime now);
 
     @Query("SELECT b FROM Booking b WHERE b.bookerId = :userId AND b.end < :now ORDER BY b.start DESC")
-    List<Booking> findPastByBookerId(long userId, Instant now);
+    List<Booking> findPastByBookerId(long userId, LocalDateTime now);
 
     @Query("SELECT b FROM Booking b WHERE b.itemId IN (SELECT i.id FROM Item i WHERE i.ownerId = :ownerId) " +
             "AND b.end < :now ORDER BY b.start DESC")
-    List<Booking> findPastByOwnerId(long ownerId, Instant now);
+    List<Booking> findPastByOwnerId(long ownerId, LocalDateTime now);
 
     @Query("SELECT b FROM Booking b WHERE b.bookerId = :userId AND b.start > :now ORDER BY b.start DESC")
-    List<Booking> findFutureByBookerId(long userId, Instant now);
+    List<Booking> findFutureByBookerId(long userId, LocalDateTime now);
 
     @Query("SELECT b FROM Booking b WHERE b.itemId IN (SELECT i.id FROM Item i WHERE i.ownerId = :ownerId) " +
             "AND b.start > :now ORDER BY b.start DESC")
-    List<Booking> findFutureByOwnerId(long ownerId, Instant now);
+    List<Booking> findFutureByOwnerId(long ownerId, LocalDateTime now);
 }
