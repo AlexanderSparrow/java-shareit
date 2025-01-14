@@ -2,12 +2,20 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.BookingService;
+import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.exception.AccessDeniedException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +24,8 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final BookingService bookingService;
 
     public List<ItemDto> getUserItems(long userId) {
         return itemRepository.findByOwnerId(userId).stream()
@@ -38,7 +48,7 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
-    public void delete(long userId, long itemId) {
+    public void deleteItem(long userId, long itemId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
 
@@ -73,6 +83,28 @@ public class ItemServiceImpl implements ItemService {
         return items.stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentResponseDto addComment(Long itemId, Long userId, CommentDto commentDto) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Item not Found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow((() -> new NotFoundException("User not Found")));
+        List<BookingResponseDto> allByBookerId = bookingService.getUserBookings(userId, "PAST");
+
+        boolean b = allByBookerId.stream()
+                .anyMatch(f -> f.getItem().getId() == itemId);
+        if (!b) {
+            throw new ValidationException("Booking for userId not found");
+        }
+
+        Comment comment = CommentMapper.toComment(commentDto);
+        comment.setItem(item);
+        comment.setAuthor(user);
+        comment.setCreated(LocalDateTime.now());
+        Comment save = commentRepository.save(comment);
+        return CommentMapper.toCommentResponseDto(save);
     }
 
 }
