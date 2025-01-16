@@ -6,7 +6,7 @@ import ru.practicum.shareit.booking.model.Booking;
 
 @UtilityClass
 public class BookingMapper {
-    public BookingDto toBookingDto (Booking booking) {
+    public BookingDto toBookingDto(Booking booking) {
         return new BookingDto(
                 booking.getId(),
                 booking.getStart(),

@@ -3,7 +3,6 @@ package ru.practicum.shareit.item;
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.BookingResponseMapper;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemShortResponseDto;
 import ru.practicum.shareit.item.model.Comment;
@@ -28,11 +27,7 @@ public class ItemResponseMapper {
 
         // Маппинг комментариев
         dto.setComments(comments.stream()
-                .map(comment -> new CommentResponseDto(
-                        comment.getId(),
-                        comment.getText(),
-                        comment.getAuthor().getName(),
-                        comment.getCreated()))
+                .map(CommentMapper::toCommentResponseDto)
                 .collect(Collectors.toList()));
 
         // Маппинг бронирований (только для владельца)

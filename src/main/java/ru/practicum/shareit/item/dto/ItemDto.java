@@ -27,4 +27,3 @@ public class ItemDto {
 
     private long requestId;
 }
-
