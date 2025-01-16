@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.booking.model.Booking;
 
@@ -53,4 +54,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.itemId IN (SELECT i.id FROM Item i WHERE i.ownerId = :ownerId) " +
             "AND b.start > :now ORDER BY b.start DESC")
     List<Booking> findFutureByOwnerId(long ownerId, LocalDateTime now);
+
+    @Query("SELECT b FROM Booking b WHERE b.itemId = :itemId AND b.end < :now ORDER BY b.end DESC LIMIT 1")
+    Booking findLastBooking(@Param("itemId") Long itemId, @Param("now") LocalDateTime now);
+
+    @Query("SELECT b FROM Booking b WHERE b.itemId = :itemId AND b.start > :now ORDER BY b.start ASC LIMIT 1")
+    Booking findNextBooking(@Param("itemId") Long itemId, @Param("now") LocalDateTime now);
 }

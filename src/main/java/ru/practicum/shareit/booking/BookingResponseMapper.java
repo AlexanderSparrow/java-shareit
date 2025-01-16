@@ -13,7 +13,7 @@ public class BookingResponseMapper {
                 booking.getId(),
                 booking.getStart(),
                 booking.getEnd(),
-                ItemResponseMapper.toItemResponseDto(booking.getItemId(), itemName),
+                ItemResponseMapper.toShortItemResponseDto(booking.getItemId(), itemName),
                 new BookerDto(booking.getBookerId()),
                 booking.getStatus()
         );

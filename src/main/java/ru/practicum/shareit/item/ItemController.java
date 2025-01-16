@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemResponseDto;
 
 import java.util.List;
 
@@ -27,9 +28,10 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable long itemId) {
-        log.info("Получен запрос на просмотр вещи с id: {}.", itemId);
-        return itemService.getItemById(itemId);
+    public ItemResponseDto getItemById(@RequestHeader("X-Sharer-User-Id") long userId,
+                                       @PathVariable long itemId) {
+        log.info("Получен запрос на просмотр вещи с id: {} пользователем {}.", itemId, userId);
+        return itemService.getItemById(itemId, userId);
     }
 
     @PostMapping

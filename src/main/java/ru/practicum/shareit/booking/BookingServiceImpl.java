@@ -111,20 +111,6 @@ public class BookingServiceImpl implements BookingService {
         return mapToResponseDtos(bookings);
     }
 
-/*    @Override
-    public List<BookingResponseDto> getOwnerBookings(long ownerId, String state) {
-        List<Booking> bookings = fetchBookingsByState(ownerId, state, true);
-        if (!bookings.isEmpty()) {
-            return bookings.stream()
-                    .map(booking -> BookingResponseMapper.toBookingResponseDto(
-                            booking,
-                            itemRepository.findNameById(booking.getItemId())))
-                    .collect(Collectors.toList());
-        } else {
-            throw new NotFoundException("Список бронирования пользователя с id: " + ownerId + " пуст.");
-        }
-    }*/
-
     @Override
     public List<BookingResponseDto> getOwnerBookings(long ownerId, String state) {
         BookingSearchState searchState = BookingSearchState.from(state);

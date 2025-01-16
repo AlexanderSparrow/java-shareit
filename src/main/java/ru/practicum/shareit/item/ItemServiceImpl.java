@@ -2,14 +2,17 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.AccessDeniedException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
@@ -17,6 +20,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +30,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final BookingService bookingService;
+    private final BookingRepository bookingRepository;
 
     public List<ItemDto> getUserItems(long userId) {
         return itemRepository.findByOwnerId(userId).stream()
@@ -33,10 +38,27 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    public ItemDto getItemById(long itemId) {
-        return itemRepository.findById(itemId)
-                .map(ItemMapper::toItemDto)
-                .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
+    @Override
+    public ItemResponseDto getItemById(long itemId, long userId) {
+        // Получаем вещь или выбрасываем исключение, если она не найдена
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("Item with id " + itemId + " not found"));
+
+        // Получаем комментарии к вещи
+        List<Comment> comments = commentRepository.findByItemId(itemId);
+
+        // Если пользователь владелец, добавляем информацию о бронированиях
+        boolean isOwner = Objects.equals(item.getOwnerId(), userId);
+        Booking lastBooking = null;
+        Booking nextBooking = null;
+
+        if (isOwner) {
+            lastBooking = bookingRepository.findLastBooking(itemId, LocalDateTime.now());
+            nextBooking = bookingRepository.findNextBooking(itemId, LocalDateTime.now());
+        }
+
+        // Создаем DTO с учетом владельца
+        return ItemResponseMapper.toItemResponseDto(item, comments, lastBooking, nextBooking);
     }
 
     public ItemDto addNewItem(long userId, ItemDto itemDto) {

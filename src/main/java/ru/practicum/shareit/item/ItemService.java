@@ -4,13 +4,14 @@ import jakarta.validation.Valid;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CommentResponseDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemResponseDto;
 
 import java.util.List;
 
 public interface ItemService {
     List<ItemDto> getUserItems(long userId);
 
-    ItemDto getItemById(long itemId);
+    ItemResponseDto getItemById(long itemId, long userId);
 
     ItemDto addNewItem(@Valid long userId, ItemDto itemDto);
 
