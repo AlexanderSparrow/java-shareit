@@ -20,6 +20,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -32,22 +33,49 @@ public class ItemServiceImpl implements ItemService {
     private final BookingService bookingService;
     private final BookingRepository bookingRepository;
 
-    public List<ItemDto> getUserItems(long userId) {
-        return itemRepository.findByOwnerId(userId).stream()
-                .map(ItemMapper::toItemDto)
+    @Override
+    public List<ItemResponseDto> getUserItems(long userId) {
+        List<Item> items = itemRepository.findByOwnerId(userId);
+
+        List<Long> itemIds = items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList());
+
+        List<Comment> comments = commentRepository.findAllByItemIdIn(itemIds);
+
+        Map<Long, List<Comment>> commentsByItemId = comments.stream()
+                .collect(Collectors.groupingBy(Comment::getId));
+
+        List<Booking> lastBookings = bookingRepository.findLastBookingsByItemIds(itemIds, LocalDateTime.now());
+        List<Booking> nextBookings = bookingRepository.findNextBookingsByItemIds(itemIds, LocalDateTime.now());
+
+        Map<Long, Booking> lastBookingsByItemId = lastBookings.stream()
+                .collect(Collectors.toMap(Booking::getItemId, booking -> booking));
+        Map<Long, Booking> nextBookingsByItemId = nextBookings.stream()
+                .collect(Collectors.toMap(Booking::getItemId, booking -> booking));
+
+        return items.stream()
+                .map(item -> {
+                    boolean isOwner = Objects.equals(item.getOwnerId(), userId);
+
+                    return ItemResponseMapper.toItemResponseDto(
+                            item,
+                            commentsByItemId.getOrDefault(item.getId(), List.of()),
+                            isOwner ? lastBookingsByItemId.get(item.getId()) : null,
+                            isOwner ? nextBookingsByItemId.get(item.getId()) : null
+                    );
+                })
                 .collect(Collectors.toList());
     }
 
+
     @Override
     public ItemResponseDto getItemById(long itemId, long userId) {
-        // Получаем вещь или выбрасываем исключение, если она не найдена
         Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new NotFoundException("Item with id " + itemId + " not found"));
+                .orElseThrow(() -> new NotFoundException("Вещь с id " + itemId + " не найдена"));
 
-        // Получаем комментарии к вещи
         List<Comment> comments = commentRepository.findByItemId(itemId);
 
-        // Если пользователь владелец, добавляем информацию о бронированиях
         boolean isOwner = Objects.equals(item.getOwnerId(), userId);
         Booking lastBooking = null;
         Booking nextBooking = null;
@@ -57,7 +85,6 @@ public class ItemServiceImpl implements ItemService {
             nextBooking = bookingRepository.findNextBooking(itemId, LocalDateTime.now());
         }
 
-        // Создаем DTO с учетом владельца
         return ItemResponseMapper.toItemResponseDto(item, comments, lastBooking, nextBooking);
     }
 

@@ -25,12 +25,10 @@ public class ItemResponseMapper {
         dto.setDescription(item.getDescription());
         dto.setAvailable(item.getAvailable());
 
-        // Маппинг комментариев
         dto.setComments(comments.stream()
                 .map(CommentMapper::toCommentResponseDto)
                 .collect(Collectors.toList()));
 
-        // Маппинг бронирований (только для владельца)
         if (lastBooking != null) {
             dto.setLastBooking(BookingResponseMapper.toBookingResponseDto(lastBooking, item.getName()));
         }

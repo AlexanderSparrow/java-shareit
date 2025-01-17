@@ -9,7 +9,7 @@ import ru.practicum.shareit.item.dto.ItemResponseDto;
 import java.util.List;
 
 public interface ItemService {
-    List<ItemDto> getUserItems(long userId);
+    List<ItemResponseDto> getUserItems(long userId);
 
     ItemResponseDto getItemById(long itemId, long userId);
 

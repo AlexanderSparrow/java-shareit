@@ -22,7 +22,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<ItemDto> getUserItems(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemResponseDto> getUserItems(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Получен запрос на список вещей пользователя с id: {}.", userId);
         return itemService.getUserItems(userId);
     }
