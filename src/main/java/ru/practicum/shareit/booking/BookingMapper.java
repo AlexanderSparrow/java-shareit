@@ -11,20 +11,9 @@ public class BookingMapper {
                 booking.getId(),
                 booking.getStart(),
                 booking.getEnd(),
-                booking.getItemId(),
-                booking.getBookerId(),
+                booking.getItem().getId(),
+                booking.getBooker().getId(),
                 booking.getStatus()
         );
-    }
-
-    public static Booking toBooking(BookingDto dto) {
-        Booking booking = new Booking();
-        booking.setId(dto.getId() > 0 ? dto.getId() : null); // Используем null для новой сущности
-        booking.setStart(dto.getStart());
-        booking.setEnd(dto.getEnd());
-        booking.setItemId(dto.getItemId());
-        booking.setBookerId(dto.getBookerId());
-        booking.setStatus(dto.getStatus());
-        return booking;
     }
 }

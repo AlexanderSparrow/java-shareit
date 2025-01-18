@@ -1,7 +1,7 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.comment;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.comment.model.Comment;
 
 import java.util.List;
 

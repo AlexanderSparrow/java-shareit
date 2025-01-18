@@ -3,12 +3,12 @@ package ru.practicum.shareit.item.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+@Entity
 @Setter
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 @Table(name = "items")
 public class Item {
     @Id
@@ -28,7 +28,7 @@ public class Item {
     private Boolean available;
 
     @Column(name = "request_id")
-    private long requestId;
+    private Long requestId;
 
 }
 

@@ -24,8 +24,7 @@ public class BookingController {
             @RequestHeader("X-Sharer-User-Id") long userId,
             @Valid @RequestBody BookingDto bookingDto) {
         log.info("Получен запрос на создание бронирования id: {}", bookingDto);
-        bookingDto.setBookerId(userId);
-        return bookingService.createBooking(bookingDto);
+        return bookingService.createBooking(userId, bookingDto);
     }
 
     @PatchMapping("/{bookingId}")

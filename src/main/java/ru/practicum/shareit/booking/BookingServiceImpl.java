@@ -11,10 +11,9 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,42 +26,43 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
 
     @Override
-    public BookingResponseDto createBooking(BookingDto bookingDto) {
+    public BookingResponseDto createBooking(long userId, BookingDto bookingDto) {
         Item item = itemRepository.findById(bookingDto.getItemId())
-                .orElseThrow(() -> new NotFoundException("Вещь с id " + bookingDto.getItemId() + " не найдена"));
+                .orElseThrow(() -> new NotFoundException("Вещь: " + bookingDto.getItemId() + " не найдена"));
         if (!item.getAvailable()) {
             throw new AccessDeniedException("Вещь недоступна для бронирования");
         }
 
-        boolean hasOverlap = bookingRepository.existsByItemIdAndDateRange(
-                bookingDto.getItemId(), bookingDto.getStart(), bookingDto.getEnd());
+        User booker = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь: " + bookingDto.getBookerId() + " не найден"));
+
+        boolean hasOverlap = bookingRepository.existsByItemIdAndStatusAndStartBeforeAndEndAfter(
+                bookingDto.getItemId(), BookingStatus.APPROVED, bookingDto.getStart(), bookingDto.getEnd());
         if (hasOverlap) {
             throw new ValidationException("Вещь уже забронирована на указанный период");
         }
 
-        if (!userRepository.existsById(bookingDto.getBookerId())) {
-            throw new NotFoundException("Пользователь с id " + bookingDto.getBookerId() + " не найден");
-        }
 
-        Booking booking = BookingMapper.toBooking(bookingDto);
+        Booking booking = new Booking();
+        booking.setStart(bookingDto.getStart());
+        booking.setEnd(bookingDto.getEnd());
+        booking.setItem(item);
+        booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
         booking = bookingRepository.save(booking);
-        return BookingResponseMapper.toBookingResponseDto(booking, item.getName());
+        return BookingResponseMapper.toBookingResponseDto(booking);
     }
 
     @Override
     public BookingResponseDto updateBookingStatus(long bookingId, boolean approved, long userId) {
-        // Найти бронирование
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с id: " + bookingId + " не найдено."));
 
-        // Проверить, что текущий пользователь является владельцем вещи
-        boolean isOwner = itemRepository.isOwner(userId, booking.getItemId());
+        boolean isOwner = itemRepository.existsByIdAndOwnerId(booking.getItem().getId(), userId);
         if (!isOwner) {
             throw new AccessDeniedException("Только владелец вещи может изменять статус бронирования.");
         }
 
-        // Обновить статус бронирования
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new IllegalStateException("Статус бронирования уже был изменён.");
         }
@@ -70,8 +70,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
         booking = bookingRepository.save(booking);
 
-        // Вернуть результат
-        return BookingResponseMapper.toBookingResponseDto(booking, itemRepository.findNameById(booking.getItemId()));
+        return BookingResponseMapper.toBookingResponseDto(booking);
     }
 
     @Override
@@ -79,11 +78,11 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("<Бронирование с id: " + bookingId + " не найдено."));
 
-        if (booking.getBookerId() != userId && !itemRepository.isOwner(userId, booking.getItemId())) {
+        if (booking.getBooker().getId() != userId && !itemRepository.existsByIdAndOwnerId(booking.getItem().getId(), userId)) {
             throw new NotFoundException("Бронирование id: " + bookingId + " недоступно.");
         }
 
-        return BookingResponseMapper.toBookingResponseDto(booking, itemRepository.findNameById(booking.getItemId()));
+        return BookingResponseMapper.toBookingResponseDto(booking);
     }
 
 
@@ -93,8 +92,8 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new NotFoundException("Бронирование с id " + bookingId + " не найдено"));
 
         Booking finalBooking = booking;
-        Item item = itemRepository.findById(booking.getItemId())
-                .orElseThrow(() -> new NotFoundException("Вещь с id " + finalBooking.getItemId() + " не найдена"));
+        Item item = itemRepository.findById(booking.getItem().getId())
+                .orElseThrow(() -> new NotFoundException("Вещь с id " + finalBooking.getItem().getId() + " не найдена"));
         if (item.getOwnerId() != ownerId) {
             throw new ValidationException("Только владелец вещи может изменить статус бронирования");
         }
@@ -124,35 +123,33 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<Booking> fetchBookingsByState(long userId, BookingSearchState state, boolean isOwner) {
-        LocalDateTime now = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()); // Преобразование Instant -> LocalDateTime
+        LocalDateTime now = LocalDateTime.now();
 
         return switch (state) {
             case CURRENT -> isOwner
-                    ? bookingRepository.findCurrentByOwnerId(userId, now)
-                    : bookingRepository.findCurrentByBookerId(userId, now);
+                    ? bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now)
+                    : bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(userId, now, now);
             case PAST -> isOwner
-                    ? bookingRepository.findPastByOwnerId(userId, now)
-                    : bookingRepository.findPastByBookerId(userId, now);
+                    ? bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(userId, now)
+                    : bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(userId, now);
             case FUTURE -> isOwner
-                    ? bookingRepository.findFutureByOwnerId(userId, now)
-                    : bookingRepository.findFutureByBookerId(userId, now);
+                    ? bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(userId, now)
+                    : bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(userId, now);
             case WAITING -> isOwner
-                    ? bookingRepository.findByOwnerIdAndStatus(userId, BookingStatus.WAITING)
-                    : bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.WAITING);
+                    ? bookingRepository.findAllByItem_OwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING)
+                    : bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
             case REJECTED -> isOwner
-                    ? bookingRepository.findByOwnerIdAndStatus(userId, BookingStatus.REJECTED)
-                    : bookingRepository.findByBookerIdAndStatus(userId, BookingStatus.REJECTED);
+                    ? bookingRepository.findAllByItem_OwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED)
+                    : bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.REJECTED);
             case ALL -> isOwner
-                    ? bookingRepository.findAllByOwnerId(userId)
-                    : bookingRepository.findAllByBookerId(userId);
+                    ? bookingRepository.findAllByItemOwnerIdOrderByStartDesc(userId)
+                    : bookingRepository.findAllByBookerIdOrderByStartDesc(userId);
         };
     }
 
     private List<BookingResponseDto> mapToResponseDtos(List<Booking> bookings) {
         return bookings.stream()
-                .map(booking -> BookingResponseMapper.toBookingResponseDto(
-                        booking,
-                        itemRepository.findNameById(booking.getItemId())))
+                .map(BookingResponseMapper::toBookingResponseDto)
                 .collect(Collectors.toList());
     }
 

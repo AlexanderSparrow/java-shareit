@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
@@ -25,13 +27,15 @@ public class Booking {
     private LocalDateTime start;
 
     @Column(name = "end_date", nullable = false)
-    LocalDateTime end;
+    private LocalDateTime end;
 
-    @Column(name = "item_id", nullable = false)
-    private long itemId;
+    @ManyToOne
+    @JoinColumn(name = "item_id")
+    private Item item;
 
-    @Column(name = "booker_id", nullable = false)
-    private long bookerId;
+    @ManyToOne
+    @JoinColumn(name = "booker_id")
+    private User booker;
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)

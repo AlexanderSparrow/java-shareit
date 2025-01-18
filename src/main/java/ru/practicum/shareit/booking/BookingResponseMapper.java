@@ -8,13 +8,13 @@ import ru.practicum.shareit.user.dto.BookerDto;
 
 @UtilityClass
 public class BookingResponseMapper {
-    public BookingResponseDto toBookingResponseDto(Booking booking, String itemName) {
+    public BookingResponseDto toBookingResponseDto(Booking booking) {
         return new BookingResponseDto(
                 booking.getId(),
                 booking.getStart(),
                 booking.getEnd(),
-                ItemResponseMapper.toShortItemResponseDto(booking.getItemId(), itemName),
-                new BookerDto(booking.getBookerId()),
+                ItemResponseMapper.toShortItemResponseDto(booking.getItem().getId(), booking.getItem().getName()),
+                new BookerDto(booking.getBooker().getId()),
                 booking.getStatus()
         );
     }

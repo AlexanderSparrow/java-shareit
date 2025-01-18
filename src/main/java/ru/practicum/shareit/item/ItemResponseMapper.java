@@ -3,9 +3,10 @@ package ru.practicum.shareit.item;
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.BookingResponseMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.comment.CommentMapper;
+import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemShortResponseDto;
-import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
@@ -30,10 +31,10 @@ public class ItemResponseMapper {
                 .collect(Collectors.toList()));
 
         if (lastBooking != null) {
-            dto.setLastBooking(BookingResponseMapper.toBookingResponseDto(lastBooking, item.getName()));
+            dto.setLastBooking(BookingResponseMapper.toBookingResponseDto(lastBooking));
         }
         if (nextBooking != null) {
-            dto.setNextBooking(BookingResponseMapper.toBookingResponseDto(nextBooking, item.getName()));
+            dto.setNextBooking(BookingResponseMapper.toBookingResponseDto(nextBooking));
         }
 
         return dto;
