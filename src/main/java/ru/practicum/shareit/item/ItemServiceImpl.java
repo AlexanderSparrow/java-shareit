@@ -93,6 +93,10 @@ public class ItemServiceImpl implements ItemService {
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователь с id " + userId + " не найден");
         }
+        if (itemDto.getName().isBlank()) {
+            throw new ValidationException("Имя должно быть заполнено");
+        }
+
         Item item = ItemMapper.toItem(itemDto);
         item.setOwnerId(userId);
         return ItemMapper.toItemDto(itemRepository.save(item));
