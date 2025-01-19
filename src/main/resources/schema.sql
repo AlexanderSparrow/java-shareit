@@ -40,4 +40,3 @@ CREATE TABLE IF NOT EXISTS comments (
     author_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created TIMESTAMP NOT NULL
 );
-
