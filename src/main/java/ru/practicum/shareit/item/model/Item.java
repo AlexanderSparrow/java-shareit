@@ -27,7 +27,7 @@ public class Item {
     @Column(name = "is_available", nullable = false)
     private Boolean available;
 
-    @Column(name = "request_id")
+    @Column(name = "item_request_id")
     private Long requestId;
 
 }
