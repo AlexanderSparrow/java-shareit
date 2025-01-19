@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
-    private long id;
+    private Long id;
 
     @Email(message = "Некорректный формат электронной почты!")
-    @NotBlank(message = "e-mail должен быть указан.")
+    @NotBlank(message = "E-mail должен быть указан.")
     private String email;
 
     @NotBlank(message = "Имя должно быть указано.")
