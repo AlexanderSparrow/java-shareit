@@ -25,14 +25,14 @@ public class ItemRequestMapper {
         dto.setId(request.getId());
         dto.setDescription(request.getDescription());
         dto.setCreated(request.getCreated());
-        dto.setResponses(responses);
+        dto.setItems(responses);
         return dto;
     }
 
     public ItemResponseShortDto toItemResponseShortDto(Item item) {
         ItemResponseShortDto dto = new ItemResponseShortDto();
         dto.setItemId(item.getId());
-        dto.setItemName(item.getName());
+        dto.setName(item.getName());
         dto.setOwnerId(item.getOwnerId());
         return dto;
     }
