@@ -1,4 +1,4 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.booking;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -12,9 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ru.practicum.shareit.booking.BookingController;
-import ru.practicum.shareit.booking.BookingService;
-import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 
