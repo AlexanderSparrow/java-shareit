@@ -20,7 +20,7 @@ public class ItemRequestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Object> createNewRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                    @RequestBody ItemRequestDto requestDto) {
-        log.info("Получен запрос на создание новой вещи.");
+        log.info("Получен запрос на создание новой вещи от пользователя с id: {}.", userId);
         return requestClient.createNewRequest(userId, requestDto);
     }
 
@@ -31,15 +31,15 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all")
-    private ResponseEntity<Object> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("Получен запрос на получение всех запросов пользователей на создание новой вещи.");
+    public ResponseEntity<Object> getAllRequests(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        log.info("Получен запрос пользователя с id: {} на получение всех запросов пользователей на создание новой вещи.", userId);
         return requestClient.getAllRequests(userId);
     }
 
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> getRequestById(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                  @PathVariable Long requestId) {
-        log.info("Запрошена информации о запросе на создание новой вещи с id: {}.", requestId);
+        log.info("Получен запрос на получение информации о запросе с id: {} от пользователя с id: {}.", requestId, userId);
         return requestClient.getRequestById(userId, requestId);
 
     }
