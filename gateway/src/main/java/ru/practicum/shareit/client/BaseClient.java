@@ -1,5 +1,6 @@
 package ru.practicum.shareit.client;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -8,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class BaseClient {
     protected final RestTemplate rest;
 
@@ -89,21 +91,34 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.DELETE, path, userId, parameters, null);
     }
 
-    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Long userId, @Nullable Map<String, Object> parameters, @Nullable T body) {
-        HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
+    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String path, Long userId,
+                                                          @Nullable Map<String, Object> parameters, @Nullable T body) {
+        log.info("HTTP Request - Method: {}, URI: {}, UserId: {}, Parameters: {}, Body: {}",
+                method, path, userId, parameters, body);
 
+        HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders(userId));
         ResponseEntity<Object> shareitServerResponse;
+
         try {
             if (parameters != null) {
                 shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class, parameters);
             } else {
                 shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class);
             }
+            log.info("HTTP Response - Status: {}, Body: {}",
+                    shareitServerResponse.getStatusCode(), shareitServerResponse.getBody());
         } catch (HttpStatusCodeException e) {
+
+            log.error("HTTP Error - Status: {}, Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
+        } catch (Exception e) {
+            log.error("Unexpected error during HTTP request: {}", e.getMessage(), e);
+            throw e;
         }
+
         return prepareGatewayResponse(shareitServerResponse);
     }
+
 
     private HttpHeaders defaultHeaders(Long userId) {
         HttpHeaders headers = new HttpHeaders();
