@@ -39,7 +39,7 @@ public class BookingController {
     public BookingResponseDto getBookingById(
             @PathVariable long bookingId,
             @RequestHeader("X-Sharer-User-Id") long userId) {
-        log.info("данных о конкретном бронировании (включая его статус) id: {} пользователя с id: {}", bookingId, userId);
+        log.info("Запрос данных о конкретном бронировании (включая его статус) id: {} пользователя с id: {}", bookingId, userId);
         return bookingService.getBookingById(bookingId, userId);
     }
 

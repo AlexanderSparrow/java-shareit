@@ -39,7 +39,6 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
 
-        // Обновление полей сущности
         if (userDto.getEmail() != null) {
             user.setEmail(userDto.getEmail());
         }
