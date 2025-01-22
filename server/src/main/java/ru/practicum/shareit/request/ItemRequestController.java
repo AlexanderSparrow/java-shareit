@@ -1,6 +1,5 @@
 package ru.practicum.shareit.request;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,7 +12,6 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Requests", description = "Управление запросами на добавление новой вещи")
 @RequestMapping(path = "/requests")
 public class ItemRequestController {
     private final ItemRequestService requestService;

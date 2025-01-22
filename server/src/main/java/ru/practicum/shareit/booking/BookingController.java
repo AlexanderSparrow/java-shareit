@@ -1,7 +1,5 @@
 package ru.practicum.shareit.booking;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,7 +9,6 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 
 import java.util.List;
 
-@Tag(name = "Bookings", description = "Управление бронированиями")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -24,7 +21,7 @@ public class BookingController {
     @ResponseStatus(HttpStatus.CREATED)
     public BookingResponseDto createBooking(
             @RequestHeader("X-Sharer-User-Id") long userId,
-            @Valid @RequestBody BookingDto bookingDto) {
+            @RequestBody BookingDto bookingDto) {
         log.info("Получен запрос на создание бронирования id: {}", bookingDto);
         return bookingService.createBooking(userId, bookingDto);
     }

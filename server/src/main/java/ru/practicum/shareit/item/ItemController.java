@@ -1,7 +1,5 @@
 package ru.practicum.shareit.item;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -14,7 +12,6 @@ import ru.practicum.shareit.item.dto.ItemResponseDto;
 import java.util.List;
 
 @Slf4j
-@Tag(name = "Items", description = "Управление вещами")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/items")
@@ -37,7 +34,7 @@ public class ItemController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ItemDto addNewItem(@RequestHeader("X-Sharer-User-Id") long userId,
-                              @Valid @RequestBody ItemDto itemDto) {
+                              @RequestBody ItemDto itemDto) {
         log.info("Добавление новой вещи пользователем с id: {}. Детали: {}", userId, itemDto);
         return itemService.addNewItem(userId, itemDto);
     }
@@ -65,7 +62,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentResponseDto addComment(@PathVariable Long itemId,
-                                         @Valid @RequestBody CommentDto commentDto,
+                                         @RequestBody CommentDto commentDto,
                                          @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Добавление комментария к вещи с id: {} пользователем с id: {}. Текст: '{}'.", itemId, userId, commentDto.getText());
         return itemService.addComment(itemId, userId, commentDto);
