@@ -30,7 +30,7 @@ public class ItemRequestMapper {
     }
 
     public ItemResponseShortDto toItemResponseShortDto(Item item) {
-        ItemResponseShortDto dto = new ItemResponseShortDto();
+        ItemResponseShortDto dto = new ItemResponseShortDto(1L, "Name", 2L);
         dto.setItemId(item.getId());
         dto.setName(item.getName());
         dto.setOwnerId(item.getOwnerId());
