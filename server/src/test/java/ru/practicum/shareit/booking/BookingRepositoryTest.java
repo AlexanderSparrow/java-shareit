@@ -159,10 +159,10 @@ class BookingRepositoryTest {
         boolean exists = bookingRepository.existsByItemIdAndStatusAndStartBeforeAndEndAfter(
                 item.getId(),
                 BookingStatus.APPROVED,
-                LocalDateTime.now().plusHours(1),
-                LocalDateTime.now().minusHours(1)
+                LocalDateTime.now().plusDays(2), // "Сейчас + 2 days" как конец периода
+                LocalDateTime.now().minusDays(3) // "Сейчас - 3 days" как начало периода
         );
 
-        assertTrue(exists);
+        assertTrue(exists, "Бронирование должно существовать для указанных условий");
     }
 }
