@@ -12,6 +12,10 @@ import java.util.List;
 @UtilityClass
 public class ItemRequestMapper {
     public ItemRequestDto toItemRequestDto(ItemRequest request) {
+        if (request == null) {
+            return null;
+        }
+
         ItemRequestDto dto = new ItemRequestDto();
         dto.setId(request.getId());
         dto.setDescription(request.getDescription());
@@ -21,6 +25,9 @@ public class ItemRequestMapper {
     }
 
     public ItemRequestWithResponsesDto toItemRequestWithResponsesDto(ItemRequest request, List<ItemResponseShortDto> responses) {
+        if (request == null) {
+            return null;
+        }
         ItemRequestWithResponsesDto dto = new ItemRequestWithResponsesDto();
         dto.setId(request.getId());
         dto.setDescription(request.getDescription());
@@ -30,6 +37,9 @@ public class ItemRequestMapper {
     }
 
     public ItemResponseShortDto toItemResponseShortDto(Item item) {
+        if (item == null) {
+            return null;
+        }
         ItemResponseShortDto dto = new ItemResponseShortDto(1L, "Name", 2L);
         dto.setItemId(item.getId());
         dto.setName(item.getName());
