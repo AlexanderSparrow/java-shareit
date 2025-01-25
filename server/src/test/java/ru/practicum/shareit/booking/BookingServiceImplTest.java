@@ -10,6 +10,7 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.AccessDeniedException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
@@ -87,6 +88,55 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void createBooking_UserNotFound_ShouldThrowNotFoundException() {
+        // Arrange
+        BookingDto bookingDto = new BookingDto(0, booking.getStart(), booking.getEnd(), item.getId(), 9999L, BookingStatus.WAITING);
+
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> bookingService.createBooking(user.getId(), bookingDto)
+        );
+        assertEquals("Пользователь: 9999 не найден", exception.getMessage());
+        verify(userRepository).findById(user.getId());
+    }
+
+    @Test
+    void createBooking_OverlappingBooking_ShouldThrowValidationException() {
+        // Arrange
+        BookingDto bookingDto = new BookingDto(0, booking.getStart(), booking.getEnd(), item.getId(), user.getId(), BookingStatus.WAITING);
+
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingRepository.existsByItemIdAndStatusAndStartBeforeAndEndAfter(
+                eq(item.getId()), eq(BookingStatus.APPROVED), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(true);
+
+        // Act & Assert
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> bookingService.createBooking(user.getId(), bookingDto)
+        );
+        assertEquals("Вещь уже забронирована на указанный период", exception.getMessage());
+    }
+
+    @Test
+    void createBooking_InvalidDates_ShouldThrowNotFoundException() {
+        // Arrange
+        BookingDto bookingDto = new BookingDto(0, booking.getEnd(), booking.getStart(), item.getId(), user.getId(), BookingStatus.WAITING);
+
+        // Act & Assert
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> bookingService.createBooking(user.getId(), bookingDto)
+        );
+        assertEquals("Вещь: 1 не найдена", exception.getMessage());
+    }
+
+    @Test
     void createBooking_ItemUnavailable_ShouldThrowAccessDeniedException() {
         item.setAvailable(false);
         BookingDto bookingDto = new BookingDto(0, booking.getStart(), booking.getEnd(), item.getId(), user.getId(), BookingStatus.WAITING);
@@ -148,5 +198,73 @@ class BookingServiceImplTest {
         assertEquals(1, response.size());
         assertEquals(booking.getId(), response.get(0).getId());
     }
+
+    @Test
+    void updateBookingStatus_InvalidBookingStatus_ShouldThrowIllegalStateException() {
+        booking.setStatus(BookingStatus.APPROVED);
+
+        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
+        when(itemRepository.existsByIdAndOwnerId(booking.getItem().getId(), user.getId())).thenReturn(true);
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> bookingService.updateBookingStatus(booking.getId(), true, user.getId())
+        );
+        assertEquals("Статус бронирования уже был изменён.", exception.getMessage());
+        verify(bookingRepository, never()).save(any(Booking.class));
+    }
+
+    @Test
+    void getOwnerBookings_EmptyList_ShouldThrowNotFoundException() {
+        when(bookingRepository.findAllByItemOwnerIdOrderByStartDesc(user.getId())).thenReturn(List.of());
+
+        NotFoundException exception = assertThrows(
+                NotFoundException.class,
+                () -> bookingService.getOwnerBookings(user.getId(), "ALL")
+        );
+        assertEquals("Список бронирования пользователя с id: " + user.getId() + " пуст.", exception.getMessage());
+    }
+
+    @Test
+    void getUserBookings_InvalidState_ShouldThrowValidationException() {
+        ValidationException exception = assertThrows(
+                ValidationException.class,
+                () -> bookingService.getUserBookings(user.getId(), "INVALID_STATE")
+        );
+        assertEquals("Неизвестный статус: INVALID_STATE", exception.getMessage());
+    }
+
+    @Test
+    void fetchBookingsByState_CurrentState_ShouldReturnList() {
+        when(bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(
+                eq(user.getId()), any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(List.of(booking));
+
+        List<Booking> bookings = bookingService.fetchBookingsByState(user.getId(), BookingSearchState.CURRENT, false);
+
+        assertNotNull(bookings);
+        assertEquals(1, bookings.size());
+        assertEquals(booking.getId(), bookings.get(0).getId());
+    }
+
+    @Test
+    void fetchBookingsByState_FutureState_ShouldReturnEmptyList() {
+        when(bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(eq(user.getId()), any(LocalDateTime.class)))
+                .thenReturn(List.of());
+
+        List<Booking> bookings = bookingService.fetchBookingsByState(user.getId(), BookingSearchState.FUTURE, false);
+
+        assertNotNull(bookings);
+        assertTrue(bookings.isEmpty());
+    }
+
+    @Test
+    void mapToResponseDtos_EmptyList_ShouldReturnEmptyResponseList() {
+        List<BookingResponseDto> response = bookingService.mapToResponseDtos(List.of());
+
+        assertNotNull(response);
+        assertTrue(response.isEmpty());
+    }
+
 }
 

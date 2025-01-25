@@ -122,7 +122,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private List<Booking> fetchBookingsByState(long userId, BookingSearchState state, boolean isOwner) {
+    List<Booking> fetchBookingsByState(long userId, BookingSearchState state, boolean isOwner) {
         LocalDateTime now = LocalDateTime.now();
 
         return switch (state) {
@@ -147,7 +147,7 @@ public class BookingServiceImpl implements BookingService {
         };
     }
 
-    private List<BookingResponseDto> mapToResponseDtos(List<Booking> bookings) {
+    List<BookingResponseDto> mapToResponseDtos(List<Booking> bookings) {
         return bookings.stream()
                 .map(BookingResponseMapper::toBookingResponseDto)
                 .collect(Collectors.toList());
