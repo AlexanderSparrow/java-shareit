@@ -16,6 +16,7 @@ import ru.practicum.shareit.comment.dto.CommentResponseDto;
 import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.exception.AccessDeniedException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemResponseDto;
 import ru.practicum.shareit.item.dto.ItemShortResponseDto;
@@ -163,4 +164,76 @@ class ItemServiceImplTest {
         assertEquals(comment.getText(), result.getText());
         verify(commentRepository, times(1)).save(any(Comment.class));
     }
+
+    @Test
+    void updateItem_ItemExists_ShouldUpdateItem() {
+        ItemDto itemDto = new ItemDto(1L, 1L, "Updated Name", "Updated Description", true, null);
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+        when(itemRepository.save(any(Item.class))).thenReturn(item);
+
+        ItemDto result = itemService.updateItem(user.getId(), item.getId(), itemDto);
+
+        assertNotNull(result);
+        assertEquals("Updated Name", result.getName());
+        assertEquals("Updated Description", result.getDescription());
+        verify(itemRepository, times(1)).save(any(Item.class));
+    }
+
+    @Test
+    void updateItem_ItemDoesNotExist_ShouldThrowNotFoundException() {
+        ItemDto itemDto = new ItemDto(1L, 1L, "Updated Name", "Updated Description", true, null);
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> itemService.updateItem(user.getId(), item.getId(), itemDto));
+
+        assertEquals("Вещь с id " + item.getId() + " не найдена", exception.getMessage());
+    }
+
+    @Test
+    void updateItem_UserNotOwner_ShouldThrowNotFoundException() {
+        ItemDto itemDto = new ItemDto(1L, 1L, "Updated Name", "Updated Description", true, null);
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> itemService.updateItem(999L, item.getId(), itemDto));
+
+        assertEquals("Пользователь не владеет этой вещью", exception.getMessage());
+    }
+
+    @Test
+    void searchItems_TextIsBlank_ShouldReturnEmptyList() {
+        List<ItemDto> result = itemService.searchItems("");
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void searchItems_ItemsFound_ShouldReturnItemList() {
+        Item item2 = new Item(2L, 1L, "Another Item", "Another Description", true, user.getId());
+        when(itemRepository.findByAvailableTrueAndNameContainingIgnoreCaseOrAvailableTrueAndDescriptionContainingIgnoreCase("Item", "Item")).thenReturn(List.of(item, item2));
+
+        List<ItemDto> result = itemService.searchItems("Item");
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(i -> i.getName().equals("Item Name")));
+        assertTrue(result.stream().anyMatch(i -> i.getName().equals("Another Item")));
+    }
+
+    @Test
+    void addComment_NoBookingFound_ShouldThrowValidationException() {
+        CommentDto commentDto = new CommentDto(0, "Great item!", null, null, null); // Указываем только текст комментария
+
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(bookingService.getUserBookings(user.getId(), "PAST")).thenReturn(List.of()); // Нет бронирования
+
+        ValidationException exception = assertThrows(ValidationException.class,
+                () -> itemService.addComment(item.getId(), user.getId(), commentDto));
+
+        assertEquals("Бронирования для пользователя с id: " + user.getId() + " не найдено.", exception.getMessage());
+    }
+
 }
