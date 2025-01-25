@@ -9,15 +9,12 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class BookingResponseMapperTest {
 
     private Item item;
-
     private User booker;
-
     private Booking booking;
 
     @BeforeEach
@@ -29,7 +26,6 @@ class BookingResponseMapperTest {
 
     @Test
     void toBookingResponseDto_ShouldReturnCorrectBookingResponseDto() {
-
         BookingResponseDto bookingResponseDto = BookingResponseMapper.toBookingResponseDto(booking);
 
         assertNotNull(bookingResponseDto);
@@ -40,5 +36,14 @@ class BookingResponseMapperTest {
         assertEquals(item.getName(), bookingResponseDto.getItem().getName());
         assertEquals(booker.getId(), bookingResponseDto.getBooker().getId());
         assertEquals(booking.getStatus(), bookingResponseDto.getStatus());
+    }
+
+    @Test
+    void toBookingResponseDto_WithBookingWithoutStatus_ShouldReturnBookingResponseDtoWithNullStatus() {
+        booking.setStatus(null);
+        BookingResponseDto bookingResponseDto = BookingResponseMapper.toBookingResponseDto(booking);
+
+        assertNotNull(bookingResponseDto);
+        assertNull(bookingResponseDto.getStatus());
     }
 }

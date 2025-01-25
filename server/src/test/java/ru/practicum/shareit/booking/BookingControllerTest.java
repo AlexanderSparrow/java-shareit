@@ -123,15 +123,4 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$[0].id").value(bookingResponseDto.getId()))
                 .andExpect(jsonPath("$[0].status").value(bookingResponseDto.getStatus().toString()));
     }
-
- /*   @Test
-    void createBooking_ShouldReturnBadRequest_WhenValidationFails() throws Exception {
-        BookingDto invalidBookingDto = new BookingDto(); // пустой объект не пройдет валидацию
-
-        mockMvc.perform(post("/bookings")
-                        .header("X-Sharer-User-Id", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidBookingDto)))
-                .andExpect(status().isBadRequest());
-    }*/
 }
