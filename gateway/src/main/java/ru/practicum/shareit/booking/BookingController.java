@@ -47,7 +47,7 @@ public class BookingController {
     @GetMapping
     public ResponseEntity<Object> getUserBookings(
             @RequestHeader("X-Sharer-User-Id") long userId,
-            @RequestParam String stateParam) {
+            @RequestParam(defaultValue = "ALL") String stateParam) {
         BookingSearchState state = BookingSearchState.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Неизвестный статус: " + stateParam));
         log.info("Запрошен список всех бронирований текущего пользователя с id: {}, состояние: {}", userId, state);
@@ -57,7 +57,7 @@ public class BookingController {
     @GetMapping("/owner")
     public ResponseEntity<Object> getOwnerBookings(
             @RequestHeader("X-Sharer-User-Id") long ownerId,
-            @RequestParam String stateParam) {
+            @RequestParam(defaultValue = "ALL") String stateParam) {
 
         BookingSearchState state = BookingSearchState.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Неизвестный статус: " + stateParam));
