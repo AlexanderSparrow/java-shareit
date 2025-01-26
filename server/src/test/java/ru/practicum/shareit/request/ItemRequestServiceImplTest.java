@@ -96,15 +96,20 @@ class ItemRequestServiceImplTest {
 
     @Test
     void getAllRequests_ShouldReturnRequests() {
+        // Настройка mock для requestRepository
         when(requestRepository.findAllByOtherUsers(user.getId())).thenReturn(List.of(itemRequest));
-        when(itemRepository.findAllByRequestId(itemRequest.getId())).thenReturn(Collections.emptyList());
+
+        // Настройка mock для itemRepository с методом findByRequestIdIn
+        when(itemRepository.findByRequestIdIn(Collections.singletonList(itemRequest.getId()))).thenReturn(Collections.emptyList());
 
         List<ItemRequestWithResponsesDto> result = requestService.getAllRequests(user.getId());
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(itemRequest.getDescription(), result.getFirst().getDescription());
+        assertEquals(itemRequest.getDescription(), result.get(0).getDescription());
+
         verify(requestRepository, times(1)).findAllByOtherUsers(user.getId());
+        verify(itemRepository, times(1)).findByRequestIdIn(Collections.singletonList(itemRequest.getId()));
     }
 
     @Test
