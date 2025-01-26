@@ -62,7 +62,6 @@ class ItemRequestServiceImplTest {
         ItemRequestDto result = requestService.createNewRequest(user.getId(), requestDto);
 
         assertNotNull(result);
-        //assertEquals(itemRequest.getId(), result.getId());
         assertEquals(itemRequest.getDescription(), result.getDescription());
         verify(userRepository, times(1)).findById(user.getId());
         verify(requestRepository, times(1)).save(any(ItemRequest.class));
@@ -90,7 +89,7 @@ class ItemRequestServiceImplTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(itemRequest.getDescription(), result.getFirst().getDescription());
+        assertEquals(itemRequest.getDescription(), result.get(0).getDescription());
         verify(requestRepository, times(1)).findByRequestorIdOrderByCreatedDesc(user.getId());
     }
 
