@@ -11,6 +11,7 @@ import java.util.List;
 
 @UtilityClass
 public class ItemRequestMapper {
+
     public ItemRequestDto toItemRequestDto(ItemRequest request) {
         if (request == null) {
             return null;
@@ -19,7 +20,7 @@ public class ItemRequestMapper {
         ItemRequestDto dto = new ItemRequestDto();
         dto.setId(request.getId());
         dto.setDescription(request.getDescription());
-        dto.setRequestorId(request.getRequestor().getId());
+        dto.setRequestorId(request.getRequestor() != null ? request.getRequestor().getId() : null);
         dto.setCreated(request.getCreated());
         return dto;
     }
@@ -40,7 +41,7 @@ public class ItemRequestMapper {
         if (item == null) {
             return null;
         }
-        ItemResponseShortDto dto = new ItemResponseShortDto(1L, "Name", 2L);
+        ItemResponseShortDto dto = new ItemResponseShortDto();
         dto.setItemId(item.getId());
         dto.setName(item.getName());
         dto.setOwnerId(item.getOwnerId());

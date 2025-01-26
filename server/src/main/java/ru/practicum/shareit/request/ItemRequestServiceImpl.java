@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestWithResponsesDto;
 import ru.practicum.shareit.request.dto.ItemResponseShortDto;
@@ -13,6 +14,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,13 +55,32 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestWithResponsesDto> getAllRequests(Long userId) {
+        // Получаем список запросов от других пользователей
         List<ItemRequest> requests = requestRepository.findAllByOtherUsers(userId);
+
+        // Если запросов нет, возвращаем пустой список
+        if (requests.isEmpty()) {
+            return List.of();
+        }
+
+        // Извлекаем идентификаторы запросов
+        List<Long> requestIds = requests.stream()
+                .map(ItemRequest::getId)
+                .collect(Collectors.toList());
+
+        // Загружаем все связанные предметы и группируем их по requestId
+        Map<Long, List<ItemResponseShortDto>> itemsByRequest = itemRepository.findByRequestIdIn(requestIds).stream()
+                .collect(Collectors.groupingBy(
+                        Item::getRequestId, // Группируем по идентификатору запроса
+                        Collectors.mapping(ItemRequestMapper::toItemResponseShortDto, Collectors.toList())
+                ));
+
+        // Мапим запросы в DTO с учетом заранее загруженных предметов
         return requests.stream()
-                .map(request -> ItemRequestMapper.toItemRequestWithResponsesDto(request,
-                        itemRepository.findAllByRequestId(request.getId())
-                                .stream()
-                                .map(ItemRequestMapper::toItemResponseShortDto)
-                                .collect(Collectors.toList())))
+                .map(request -> ItemRequestMapper.toItemRequestWithResponsesDto(
+                        request,
+                        itemsByRequest.getOrDefault(request.getId(), List.of())
+                ))
                 .collect(Collectors.toList());
     }
 

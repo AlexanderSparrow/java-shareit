@@ -14,7 +14,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     boolean existsByIdAndOwnerId(Long itemId, Long ownerId);
 
-    //@Query("SELECT i FROM Item i WHERE i.requestId = :requestId")
     List<Item> findAllByRequestId(Long requestId);
 
+    List<Item> findByRequestIdIn(List<Long> requestIds);
 }

@@ -98,7 +98,7 @@ class ItemServiceImplTest {
 
     @Test
     void addNewItem_ValidInput_ShouldSaveItem() {
-        ItemDto itemDto = new ItemDto(0, 0, "Item Name", "Item Description", true, null); // Поля для добавления
+        ItemDto itemDto = new ItemDto(null, null, "Item Name", "Item Description", true, null); // Поля для добавления
         when(userRepository.existsById(user.getId())).thenReturn(true);
         when(itemRepository.save(any(Item.class))).thenReturn(item);
 
@@ -114,7 +114,7 @@ class ItemServiceImplTest {
     void addNewItem_UserNotFound_ShouldThrowNotFoundException() {
         when(userRepository.existsById(user.getId())).thenReturn(false);
 
-        ItemDto itemDto = new ItemDto(0, 0, "Item Name", "Item Description", true, null); // Поля для добавления
+        ItemDto itemDto = new ItemDto(null, null, "Item Name", "Item Description", true, null); // Поля для добавления
         NotFoundException exception = assertThrows(NotFoundException.class,
                 () -> itemService.addNewItem(user.getId(), itemDto));
 
