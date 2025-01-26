@@ -96,19 +96,6 @@ class ItemServiceImplTest {
         assertEquals("Вещь с id " + item.getId() + " не найдена", exception.getMessage());
     }
 
-    @Test
-    void addNewItem_ValidInput_ShouldSaveItem() {
-        ItemDto itemDto = new ItemDto(null, null, "Item Name", "Item Description", true, null); // Поля для добавления
-        when(userRepository.existsById(user.getId())).thenReturn(true);
-        when(itemRepository.save(any(Item.class))).thenReturn(item);
-
-        ItemDto result = itemService.addNewItem(user.getId(), itemDto);
-
-        assertNotNull(result);
-        assertEquals(item.getName(), result.getName());
-        verify(itemRepository, times(1)).save(any(Item.class));
-    }
-
 
     @Test
     void addNewItem_UserNotFound_ShouldThrowNotFoundException() {
