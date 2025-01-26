@@ -29,13 +29,11 @@ class ItemByRequestResponseDtoJsonTest {
 
     @Test
     void testDeserialize() throws Exception {
-        var content = """
-                {
-                    "id": 1,
-                    "name": "Saw",
-                    "ownerId": 2
-                }
-                """;
+        var content = "{\n" +
+                      "    \"id\": 1,\n" +
+                      "    \"name\": \"Saw\",\n" +
+                      "    \"ownerId\": 2\n" +
+                      "}\n";
 
         var dto = json.parseObject(content);
 

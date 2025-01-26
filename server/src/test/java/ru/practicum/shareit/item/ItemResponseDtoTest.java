@@ -43,17 +43,15 @@ class ItemResponseDtoTest {
 
     @Test
     void testDeserialize() throws Exception {
-        var content = """
-                {
-                    "id": 1,
-                    "name": "Saw",
-                    "description": "Tool",
-                    "available": true,
-                    "lastBooking": {"id": 1, "bookerId": 2, "itemId": 3},
-                    "nextBooking": {"id": 4, "bookerId": 5, "itemId": 6},
-                    "comments": [{"id": 1, "text": "Good item", "authorName": "John Doe"}]
-                }
-                """;
+        var content = "{\n" +
+                      "  \"id\": 1,\n" +
+                      "  \"name\": \"Saw\",\n" +
+                      "  \"description\": \"Tool\",\n" +
+                      "  \"available\": true,\n" +
+                      "  \"lastBooking\": {\"id\": 1, \"bookerId\": 2, \"itemId\": 3},\n" +
+                      "  \"nextBooking\": {\"id\": 4, \"bookerId\": 5, \"itemId\": 6},\n" +
+                      "  \"comments\": [{\"id\": 1, \"text\": \"Good item\", \"authorName\": \"John Doe\"}]\n" +
+                      "}";
 
         var dto = json.parseObject(content);
 
@@ -65,4 +63,5 @@ class ItemResponseDtoTest {
         assertThat(dto.getNextBooking().getId()).isEqualTo(4L);
         assertThat(dto.getComments()).hasSize(1);
     }
+
 }
